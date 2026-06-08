@@ -1,0 +1,8 @@
+flask
+flask-migrate
+flask-jwt-extended
+google-oauth
+google
+flask-sqlalchemy
+python-dotenv
+werkzeug
