@@ -54,7 +54,6 @@ class UserService:
         except:
             raise Exception("Error while updating passowrd")
 
-    
 
 
 

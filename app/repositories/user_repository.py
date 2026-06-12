@@ -55,3 +55,5 @@ class UserRepository:
         except:
             db.session.rollback()
             raise Exception("Error while revoking token")
+
+    
