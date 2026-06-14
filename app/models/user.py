@@ -1,9 +1,10 @@
 from datetime import datetime
 from app.extensions import db 
 from werkzeug.security import generate_password_hash, check_password_hash
+from app.models.mixins.timestampmixin import TimeStampMixin
 
 
-class User(db.Model):
+class User(TimeStampMixin, db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)

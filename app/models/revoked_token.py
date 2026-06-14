@@ -1,7 +1,8 @@
 from datetime import datetime
 from app.extensions import db
+from app.models.mixins.timestampmixin import TimeStampMixin
 
-class RevokedToken(db.Model):
+class RevokedToken(TimeStampMixin, db.Model):
     __tablename__ = "revoked_tokens"
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)

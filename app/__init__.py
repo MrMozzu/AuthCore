@@ -12,6 +12,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    mail.init_app(app)
 
     from app.models.revoked_token import RevokedToken
     from app.models.password_reset_token import PasswordResetToken

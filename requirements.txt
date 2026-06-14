@@ -6,3 +6,4 @@ google
 flask-sqlalchemy
 python-dotenv
 werkzeug
+flask-mail
