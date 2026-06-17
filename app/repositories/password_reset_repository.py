@@ -19,16 +19,29 @@ class PasswordResetRepository:
 
     @staticmethod
     def get_by_token_hash(token_hash:str) -> PasswordResetToken | None:
-        pass 
+        password_reset_token = PasswordResetToken.query.filter_by(token_hash=token_hash).first()
 
+        if not password_reset_token or password_reset_token.is_used or password_reset_token.expires_at < datetime.utcnow():
+            raise ValueError("Invalid or expired token")
+
+        return password_reset_token
+        
 
     @staticmethod
     def invalidate_tokens(user_id: int) ->  None:
-        pass
+        tokens = PasswordResetToken.query.filter_by(user_id=user_id).all()
+
+        for token in tokens:
+            token.is_used = True
+        
+        db.session.commit()
 
     @staticmethod
-    def marked_used(token: PasswordResetToken) -> None:
-        pass 
+    def mark_used(token: PasswordResetToken) -> None:
+        token.is_used = True
+        db.session.commit()
+
+    
 
  
 

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+    # Use DATABASE_URL provided by Render
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///data.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     

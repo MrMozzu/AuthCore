@@ -76,6 +76,28 @@ class AuthService:
 
         PasswordResetRepository.create_token(user.id, hashed_token, expires_at)
         EmailService.send_reset_password_email(user.email, token)
-
         return token 
+        
+    
+    @staticmethod
+    def reset_password(token, new_password):
+
+        hashed_token = sha256(token.encode()).hexdigest()
+        password_reset_token = PasswordResetRepository.get_by_token_hash(hashed_token)
+
+        user = UserRepository.get_by_id(password_reset_token.user_id)
+
+        if not user:
+            raise ValueError("User not found")
+        
+        if user.check_password(new_password):
+            raise ValueError("New password cannot be same as old password")
+
+        user.set_password(new_password)
+        UserRepository.update(user)
+
+        PasswordResetRepository.mark_used(password_reset_token)
+        
+        return True
+
         

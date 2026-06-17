@@ -1,5 +1,5 @@
 from flask import Flask
-from app.extensions import db, migrate, jwt
+from app.extensions import db, migrate, jwt, mail
 
 
 def create_app():

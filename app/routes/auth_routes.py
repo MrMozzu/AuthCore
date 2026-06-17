@@ -102,4 +102,48 @@ def refresh_token():
     }), 200
 
     
+
+@auth_bp.post("/forgot-password")
+def forgot_password():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    email = data.get("email")
+    if not email:
+        return jsonify({"error": "email is required"}), 400 
+
+    try:
+        AuthService.forgot_password(email)
+        return jsonify({"message": "if email is registered then password reset email sent successfully"}), 200
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# reset password 
+
+@auth_bp.post("/reset-password/<string:token>")
+def reset_password(token):
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
     
+    new_password = data.get("new_password")
+    if not new_password:
+        return jsonify({"error": "new_password is required"}), 400 
+
+    user_id = get_jwt_identity()
+
+    try:
+        AuthService.reset_password(token, new_password)
+        return jsonify({"message": "Password reset successfully"}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
