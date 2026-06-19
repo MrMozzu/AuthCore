@@ -16,6 +16,8 @@ def create_app():
 
     from app.models.revoked_token import RevokedToken
     from app.models.password_reset_token import PasswordResetToken
+    from app.models.refresh_token import RefreshToken
+    from app.models.email_verification_model import EmailVerification
 
     @jwt.token_in_blocklist_loader
     def check_if_revoked(jwt_header, jwt_payload):
