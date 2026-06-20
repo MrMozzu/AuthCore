@@ -8,8 +8,8 @@ class User(TimeStampMixin, db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    name = db.Column(db.String, nullable=False)
-    phone_no = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String(50), nullable=False)
+    phone_no = db.Column(db.String(15), nullable=False, unique=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(300), unique=True, nullable=False, index=True) 
     password_hash = db.Column(db.String, nullable=False)
@@ -21,4 +21,4 @@ class User(TimeStampMixin, db.Model):
     def check_password(self, password): # it checks the hashed password, doesn't check the original password 
         return check_password_hash(self.password_hash, password)
 
-        
+    

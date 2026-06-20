@@ -44,7 +44,10 @@ class AuthService:
 
         if not check_password_hash(user.password_hash, password):
             raise ValueError("Invalid credentials")
-
+        
+        if not user.is_verified:
+            raise ValueError("User not verified")
+            
         return user
 
         

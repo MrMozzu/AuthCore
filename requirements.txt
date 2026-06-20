@@ -8,3 +8,5 @@ python-dotenv
 werkzeug
 flask-mail
 gunicorn
+marshmallow
+flask-marshmallow
