@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate, validates_schema, ValidationError
 
 
 class UserSchema(Schema):
@@ -7,6 +7,7 @@ class UserSchema(Schema):
     username = fields.String(required=True)
     email = fields.Email(required=True)
     phone_no = fields.String(required=True)
+    is_verified = fields.Boolean(required=True)
     
 class UpdateUserSchema(Schema):
     email = fields.Email(required=True)
@@ -18,6 +19,20 @@ class UserResponseSchema(Schema):
     email = fields.Email(required=True)
     phone_no = fields.String(required=True)
     is_verified = fields.Boolean(required=True)
+
+class ChangePasswordSchema(Schema):
+    old_password = fields.String(
+        required=True,
+        validate=validate.Length(min=3, max=30)
+    )
+    new_password = fields.String(
+        required=True,
+        validate=validate.Length(min=3, max=30)
+    )
+    confirm_new_password = fields.String(
+        required=True,
+        validate=validate.Length(min=3, max=30)
+    )
 
 
 

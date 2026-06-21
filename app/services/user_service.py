@@ -1,6 +1,6 @@
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
-
+from app.errors.exceptions import UserNotFoundError, InvalidCredentialsError
 
 class UserService:
 
@@ -10,7 +10,7 @@ class UserService:
         user = UserRepository.get_by_id(user_id)
 
         if not user:
-            raise ValueError("User does not exists")
+            raise UserNotFoundError("User does not exists")
         return user
 
 
@@ -19,7 +19,7 @@ class UserService:
         user = UserRepository.get_by_id(user_id)
 
         if not user:
-            raise ValueError("User not found")
+            raise UserNotFoundError("User not found")
 
         if email:
             user.email = email
@@ -40,10 +40,10 @@ class UserService:
         user = UserRepository.get_by_id(user_id)
 
         if not user:
-            raise ValueError("User not found")
+            raise UserNotFoundError("User not found")
 
         if not user.check_password(old_password):
-            raise ValueError("Incorrect old password")
+            raise InvalidCredentialsError("Incorrect old password")
 
         user.set_password(new_password)
 

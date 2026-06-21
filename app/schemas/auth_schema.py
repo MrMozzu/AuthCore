@@ -1,5 +1,4 @@
-from marshmallow import fields, validate
-from marshmallow import Schema
+from marshmallow import fields, validate, validates_schema, ValidationError, Schema
 
 class RegisterSchema(Schema):
     name = fields.String(

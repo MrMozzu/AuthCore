@@ -5,7 +5,7 @@ from app.models.user import User
 from datetime import datetime 
 from hashlib import sha256
 import secrets
-
+from app.errors.exceptions import InvalidTokenError, ExpiredTokenError, InvalidCredentialsError
 
 class EmailVerificationService:
 
@@ -40,13 +40,13 @@ class EmailVerificationService:
         )
 
         if not verification_token:
-            return False
+            raise InvalidTokenError("token not found")
 
         if verification_token.is_used:
-            return False
+            raise InvalidTokenError("token used already")
 
         if verification_token.expires_at < datetime.utcnow():
-            return False
+            raise ExpiredTokenError("token expired")
 
         verification_token.user.is_verified = True
         verification_token.is_used = True
