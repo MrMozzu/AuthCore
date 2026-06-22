@@ -48,3 +48,7 @@ class ResetPasswordSchema(Schema):
         required=True
     )
 
+class RefreshTokenSchema(Schema):
+    refresh_token = fields.String(
+        required=True
+    )

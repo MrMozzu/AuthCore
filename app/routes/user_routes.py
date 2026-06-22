@@ -1,14 +1,18 @@
-from flask import Blueprint, request, jsonify
+from flask import request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.services.user_service import UserService
 from datetime import datetime, timezone
 from app.models.revoked_token import RevokedToken
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_schema import UpdateUserSchema, ChangePasswordSchema
+from app.schemas.user_schema import UpdateUserSchema, ChangePasswordSchema, UserSchema
+from app.schemas.response_schema import MessageResponseSchema
+from flask_smorest import Blueprint
 
-users_bp = Blueprint("user", __name__, url_prefix="/users")
+users_bp = Blueprint("users", __name__, url_prefix="/users", description="User Management APIs")
 
 @users_bp.get("/me")
+@users_bp.doc(security=[{"BearerAuth": []}])
+@users_bp.response(200, UserSchema)
 @jwt_required()
 def get_me():
 
@@ -27,38 +31,46 @@ def get_me():
 
 
 @users_bp.patch("/update")
+@users_bp.doc(security=[{"BearerAuth": []}])
+@users_bp.arguments(UpdateUserSchema)
+@users_bp.response(200, UserSchema)
 @jwt_required()
-def update_user():
+def update_user(data):
 
     user_id = get_jwt_identity()
     
-    data = UpdateUserSchema().load(request.get_json())
     updated_user = UserService.update_user(user_id, **data)
     
     return jsonify({
-            "id": updated_user.id,
-            "email": updated_user.email,
-            "phone_no": updated_user.phone_no,
-            "name": updated_user.name,
-            "message": "User updated successfully"
+        "id": updated_user.id,
+        "name": updated_user.name,
+        "username": updated_user.username,
+        "email": updated_user.email,
+        "phone_no": updated_user.phone_no,
+        "is_verified": updated_user.is_verified,
     }), 200    
     
 
 @users_bp.patch("/change-password")
+@users_bp.doc(security=[{"BearerAuth": []}])
+@users_bp.arguments(ChangePasswordSchema)
+@users_bp.response(200, MessageResponseSchema)
 @jwt_required()
-def change_password():
+def change_password(data):
 
     user_id = get_jwt_identity()
 
-    data = ChangePasswordSchema().load(request.get_json())
     updated_user = UserService.update_password(user_id, **data)
     
     return jsonify({
+        "success": True,
         "message": "Password updated successfully"
     }), 200
 
 
 @users_bp.post("/logout")
+@users_bp.doc(security=[{"BearerAuth": []}])
+@users_bp.response(200, MessageResponseSchema)
 @jwt_required()
 def logout():
     jwt_payload = get_jwt()
@@ -71,4 +83,7 @@ def logout():
     token = RevokedToken(jti=jti, user_id=user_id, expires_at=expires_at, token_type=token_type)
     UserRepository.revoke_token(token)
     
-    return jsonify({"message": "User logged out successfully"}), 200
+    return jsonify({
+        "success": True,
+        "message": "User logged out successfully"
+    }), 200

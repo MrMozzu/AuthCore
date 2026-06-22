@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validate, validates_schema, ValidationError
+from marshmallow import Schema, fields, validate, ValidationError
 
 
 class UserSchema(Schema):
@@ -33,6 +33,4 @@ class ChangePasswordSchema(Schema):
         required=True,
         validate=validate.Length(min=3, max=30)
     )
-
-
 
