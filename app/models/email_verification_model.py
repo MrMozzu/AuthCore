@@ -5,7 +5,7 @@ from hashlib import sha256
 
 
 class EmailVerification(TimeStampMixin, db.Model):
-    __tablename__ = "email_verification_tokens"
+    __tablename__ = "email_verification"
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)

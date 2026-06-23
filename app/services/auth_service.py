@@ -1,7 +1,8 @@
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from app.repositories.refresh_token import RefreshTokenRepository
 from werkzeug.security import check_password_hash
-from flask_jwt_extended import create_access_token, get_jwt_identity
+from flask_jwt_extended import create_access_token, create_refresh_token, decode_token, get_jwt
 from app.services.email_service import EmailService
 from app.repositories.password_reset_repository import PasswordResetRepository
 import secrets
@@ -50,8 +51,20 @@ class AuthService:
         
         if not user.is_verified:
             raise EmailNotVerifiedError("User not verified")
-            
-        return user
+
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
+        decode_token = decode_token(refresh_token) # this will return payload of the token 
+
+        RefreshToken.create_token(
+            jti=decode_token["jti"],
+            user_id=user.id,
+            expires_at=datetime.fromtimestamp(
+                decode_token["exp"]
+            )
+        )
+        
+        return access_token, refresh_token
 
         
     @staticmethod
@@ -111,3 +124,7 @@ class AuthService:
         return True
 
         
+    @staticmethod
+    def refresh_token():
+        pass 
+    

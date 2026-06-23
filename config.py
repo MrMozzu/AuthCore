@@ -5,11 +5,13 @@ load_dotenv()
 
 class Config:
     # Use DATABASE_URL provided by Render
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///data.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key")
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-key")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)
 
     # Flask-Mail configuration
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")

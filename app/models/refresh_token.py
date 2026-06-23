@@ -9,4 +9,6 @@ class RefreshToken(TimeStampMixin, db.Model):
     jti = db.Column(db.String, nullable=False, unique=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
-    user = db.relationship("User", backref="refresh_tokens")
+    user = db.relationship("User", backref="refresh_tokens")    
+    is_revoked = db.Column(db.Boolean, default=False, index=True)
+    revoked_at = db.Column(db.DateTime, nullable=True)
