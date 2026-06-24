@@ -38,5 +38,9 @@ class UserNotFoundError(APIException):
 class ResourceNotFoundError(APIException):
     status = 404
     message = "Resource not found"
+
+class Unauthorized(APIException):
+    status = 401
+    message = "Unauthorized"
  
 

@@ -26,7 +26,7 @@ def register(data):
 @auth_bp.response(200, LoginResponseSchema)
 def login_route(data):
 
-    user = AuthService.login(**data)
+    access_token, refresh_token = AuthService.login(**data)
  
     return jsonify({
             "success": True,
@@ -37,11 +37,11 @@ def login_route(data):
     
 
 
-@auth_bp.post("/refresh")  
+@auth_bp.post("/refresh-access-token")  
 @auth_bp.doc(security=[{"BearerAuth": []}])
 @auth_bp.response(200, RefreshResponseSchema) 
 @jwt_required(refresh=True)
-def refresh_token():
+def refresh_access_token():
     
     user_id = get_jwt_identity() 
     new_access_token = AuthService.refresh_access_token(user_id)
@@ -80,3 +80,22 @@ def reset_password(data, token):
         "success": True,
         "message": "Password reset successfully"
     }), 200
+
+
+@auth_bp.post('/refresh')
+@auth_bp.doc(security=[{'BearerAuth':[]}])
+@auth_bp.response(200, LoginResponseSchema) 
+@jwt_required(refresh=True)
+def refresh():
+
+    user_id = get_jwt_identity() 
+    new_access_token, new_refresh_token = AuthService.refresh_token(user_id)
+
+    return jsonify({
+        "success": True,
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token,
+        "message": "Token refreshed successfully"
+    }), 200
+
+        

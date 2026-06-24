@@ -2,13 +2,13 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.repositories.refresh_token import RefreshTokenRepository
 from werkzeug.security import check_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token, decode_token, get_jwt
+from flask_jwt_extended import create_access_token, create_refresh_token, decode_token, get_jwt, get_jwt_identity
 from app.services.email_service import EmailService
 from app.repositories.password_reset_repository import PasswordResetRepository
 import secrets
 from datetime import datetime, timedelta
 from hashlib import sha256
-from app.errors.exceptions import ResourceNotFoundError, InvalidCredentialsError, EmailNotVerifiedError, ConflictError, UserNotFoundError, APIException
+from app.errors.exceptions import ResourceNotFoundError, InvalidCredentialsError, EmailNotVerifiedError, ConflictError, UserNotFoundError, APIException, Unauthorized
 
 class AuthService:
 
@@ -52,15 +52,15 @@ class AuthService:
         if not user.is_verified:
             raise EmailNotVerifiedError("User not verified")
 
-        access_token = create_access_token(identity=user.id)
-        refresh_token = create_refresh_token(identity=user.id)
-        decode_token = decode_token(refresh_token) # this will return payload of the token 
+        access_token = create_access_token(identity=str(user.id))
+        refresh_token = create_refresh_token(identity=str(user.id))
+        decoded_token = decode_token(refresh_token) # this will return payload of the token 
 
-        RefreshToken.create_token(
-            jti=decode_token["jti"],
+        RefreshTokenRepository.create_token(
+            jti=decoded_token["jti"],
             user_id=user.id,
             expires_at=datetime.fromtimestamp(
-                decode_token["exp"]
+                decoded_token["exp"]
             )
         )
         
@@ -125,6 +125,42 @@ class AuthService:
 
         
     @staticmethod
-    def refresh_token():
-        pass 
-    
+    def refresh_token(user_id):
+        
+        jwt_data = get_jwt()
+        jti = jwt_data["jti"]
+        user = UserRepository.get_by_id(user_id)
+
+        if not user:
+            raise UserNotFoundError("User not found")
+        
+        token = RefreshTokenRepository.get_token(jti)
+
+        if not token:
+            raise Unauthorized("Refresh token not found")
+        
+        if token.is_revoked:
+            raise Unauthorized("Refresh token is revoked")
+        
+        RefreshTokenRepository.revoke_token(token.jti)
+        RevokedTokenRepository.create_token(
+            jti=token.jti,
+            user_id=token.user_id,
+            token_type=token.token_type,
+            expires_at=token.expires_at
+        )
+
+        new_access_token = create_access_token(identity=str(user.id))
+        new_refresh_token = create_refresh_token(identity=str(user.id))
+
+        decoded_refresh_token = decode_token(new_refresh_token)
+
+        RefreshTokenRepository.create_token(
+            jti=decoded_refresh_token["jti"],
+            user_id=user.id,
+            expires_at=datetime.fromtimestamp(
+                decoded_refresh_token["exp"]
+            )
+        )
+
+        return new_access_token, new_refresh_token 

@@ -8,7 +8,6 @@ def create_app():
     app = Flask(__name__)
 
     app.config.from_object("config.Config")
-    app.config["JWT_SECRET_KEY"] = "super-secret-key"
 
     app.config["API_TITLE"] = "Authentication API"
     app.config["API_VERSION"] = "v1"

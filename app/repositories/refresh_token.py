@@ -1,3 +1,4 @@
+from datetime import datetime
 from app.extensions import db
 from app.models.refresh_token import RefreshToken
 
