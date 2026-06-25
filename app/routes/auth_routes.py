@@ -10,6 +10,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth", description="Authentic
 @auth_bp.post("/register")
 @auth_bp.arguments(RegisterSchema)
 @auth_bp.response(201, MessageResponseSchema)
+@limiter.limit("5 per minute") # now we have 5 calls per minute for this route, 
 def register(data):
     
     user = AuthService.register(**data)
@@ -24,6 +25,7 @@ def register(data):
 @auth_bp.post("/login")
 @auth_bp.arguments(LoginSchema)
 @auth_bp.response(200, LoginResponseSchema)
+@limiter.limit("5 per minute")
 def login_route(data):
 
     access_token, refresh_token = AuthService.login(**data)
@@ -41,6 +43,7 @@ def login_route(data):
 @auth_bp.doc(security=[{"BearerAuth": []}])
 @auth_bp.response(200, RefreshResponseSchema) 
 @jwt_required(refresh=True)
+@limiter.limit("5 per minute")
 def refresh_access_token():
     
     user_id = get_jwt_identity() 
@@ -57,6 +60,7 @@ def refresh_access_token():
 @auth_bp.post("/forgot-password")
 @auth_bp.arguments(ForgotPasswordSchema)
 @auth_bp.response(200, MessageResponseSchema)
+@limiter.limit("5 per minute")
 def forgot_password(data):
 
     user = AuthService.forgot_password(**data)
@@ -72,6 +76,7 @@ def forgot_password(data):
 @auth_bp.post("/reset-password/<string:token>")
 @auth_bp.arguments(ResetPasswordSchema)
 @auth_bp.response(200, MessageResponseSchema)
+@limiter.limit("5 per minute")
 def reset_password(data, token):
 
     user = AuthService.reset_password(token=token or data.get('token'), new_password=data['new_password'], confirm_new_password=data['confirm_new_password'])
@@ -86,6 +91,7 @@ def reset_password(data, token):
 @auth_bp.doc(security=[{'BearerAuth':[]}])
 @auth_bp.response(200, LoginResponseSchema) 
 @jwt_required(refresh=True)
+@limiter.limit("5 per minute")
 def refresh():
 
     user_id = get_jwt_identity() 
@@ -103,6 +109,7 @@ def refresh():
 @auth_bp.arguments(LogoutSchema)
 @auth_bp.response(200, MessageResponseSchema)
 @jwt_required()
+@limiter.limit("5 per minute")
 def logout(data):
     jwt_payload = get_jwt()
     refresh_token = data.get("refresh_token")
@@ -118,6 +125,7 @@ def logout(data):
 @auth_bp.doc(security=[{"BearerAuth": []}])
 @auth_bp.response(200, MessageResponseSchema)
 @jwt_required()
+@limiter.limit("5 per minute")
 def logout_all_devices():
     jwt_payload = get_jwt()
     

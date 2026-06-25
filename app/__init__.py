@@ -35,6 +35,7 @@ def create_app():
     jwt.init_app(app)
     mail.init_app(app)
     api.init_app(app)
+    limiter.init_app(app)
 
     from app.models.revoked_token import RevokedToken
     from app.models.password_reset_token import PasswordResetToken
