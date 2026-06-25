@@ -1,7 +1,7 @@
 from flask import request, jsonify
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 from app.services.auth_service import AuthService 
-from app.schemas.auth_schema import RegisterSchema, LoginSchema, ForgotPasswordSchema, ResetPasswordSchema
+from app.schemas.auth_schema import RegisterSchema, LoginSchema, ForgotPasswordSchema, ResetPasswordSchema, LogoutSchema
 from app.schemas.response_schema import MessageResponseSchema, LoginResponseSchema, RefreshResponseSchema
 from flask_smorest import Blueprint
 
@@ -97,5 +97,36 @@ def refresh():
         "refresh_token": new_refresh_token,
         "message": "Token refreshed successfully"
     }), 200
+
+@auth_bp.post('/logout')
+@auth_bp.doc(security=[{"BearerAuth": []}])
+@auth_bp.arguments(LogoutSchema)
+@auth_bp.response(200, MessageResponseSchema)
+@jwt_required()
+def logout(data):
+    jwt_payload = get_jwt()
+    refresh_token = data.get("refresh_token")
+    
+    AuthService.logout(jwt_payload, refresh_token)
+    
+    return jsonify({
+        "success": True,
+        "message": "Logged out successfully"
+    }), 200
+
+@auth_bp.post('/logout-all')
+@auth_bp.doc(security=[{"BearerAuth": []}])
+@auth_bp.response(200, MessageResponseSchema)
+@jwt_required()
+def logout_all_devices():
+    jwt_payload = get_jwt()
+    
+    AuthService.logout_all_devices(jwt_payload)
+    
+    return jsonify({
+        "success": True,
+        "message": "Logged out from all devices successfully"
+    }), 200
+
 
         

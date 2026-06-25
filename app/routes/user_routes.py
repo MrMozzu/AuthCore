@@ -1,9 +1,6 @@
 from flask import request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.user_service import UserService
-from datetime import datetime, timezone
-from app.models.revoked_token import RevokedToken
-from app.repositories.user_repository import UserRepository
 from app.schemas.user_schema import UpdateUserSchema, ChangePasswordSchema, UserSchema
 from app.schemas.response_schema import MessageResponseSchema
 from flask_smorest import Blueprint
@@ -67,23 +64,4 @@ def change_password(data):
         "message": "Password updated successfully"
     }), 200
 
-
-@users_bp.post("/logout")
-@users_bp.doc(security=[{"BearerAuth": []}])
-@users_bp.response(200, MessageResponseSchema)
-@jwt_required()
-def logout():
-    jwt_payload = get_jwt()
-    jti = jwt_payload['jti']
-    user_id = jwt_payload["sub"]
-    token_type = jwt_payload["type"]
-    expires_at = datetime.fromtimestamp(jwt_payload["exp"], tz= timezone.utc)
-    
-
-    token = RevokedToken(jti=jti, user_id=user_id, expires_at=expires_at, token_type=token_type)
-    UserRepository.revoke_token(token)
-    
-    return jsonify({
-        "success": True,
-        "message": "User logged out successfully"
-    }), 200
+

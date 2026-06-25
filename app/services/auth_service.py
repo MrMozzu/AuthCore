@@ -1,6 +1,7 @@
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.repositories.refresh_token import RefreshTokenRepository
+from app.repositories.revoked_token import RevokedTokenRepository
 from werkzeug.security import check_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token, decode_token, get_jwt, get_jwt_identity
 from app.services.email_service import EmailService
@@ -146,7 +147,7 @@ class AuthService:
         RevokedTokenRepository.create_token(
             jti=token.jti,
             user_id=token.user_id,
-            token_type=token.token_type,
+            token_type="refresh",
             expires_at=token.expires_at
         )
 
@@ -164,3 +165,76 @@ class AuthService:
         )
 
         return new_access_token, new_refresh_token 
+
+    @staticmethod
+    def logout(access_token_jwt, refresh_token=None):
+        # Revoke the current access token
+        access_jti = access_token_jwt["jti"]
+        user_id = int(access_token_jwt["sub"])
+        access_expires_at = datetime.fromtimestamp(access_token_jwt["exp"])
+
+        RevokedTokenRepository.create_token(
+            jti=access_jti,
+            user_id=user_id,
+            token_type="access",
+            expires_at=access_expires_at
+        )
+
+        # Revoke the refresh token if provided
+        if refresh_token:
+            try:
+                decoded_refresh = decode_token(refresh_token)
+                refresh_jti = decoded_refresh["jti"]
+                refresh_user_id = int(decoded_refresh["sub"])
+                refresh_expires_at = datetime.fromtimestamp(decoded_refresh["exp"])
+
+                if refresh_user_id != user_id:
+                    raise Unauthorized("Refresh token does not belong to the user")
+
+                # Revoke in RefreshToken table
+                RefreshTokenRepository.revoke_token(refresh_jti)
+
+                # Also add to RevokedToken blacklist
+                from app.models.revoked_token import RevokedToken
+                if not RevokedToken.is_revoked(refresh_jti, refresh_user_id, "refresh"):
+                    RevokedTokenRepository.create_token(
+                        jti=refresh_jti,
+                        user_id=refresh_user_id,
+                        token_type="refresh",
+                        expires_at=refresh_expires_at
+                    )
+            except Exception as e:
+                raise APIException(f"Invalid refresh token: {str(e)}")
+
+    @staticmethod
+    def logout_all_devices(access_token_jwt):
+        # Revoke the current access token
+        access_jti = access_token_jwt["jti"]
+        user_id = int(access_token_jwt["sub"])
+        access_expires_at = datetime.fromtimestamp(access_token_jwt["exp"])
+
+        RevokedTokenRepository.create_token(
+            jti=access_jti,
+            user_id=user_id,
+            token_type="access",
+            expires_at=access_expires_at
+        )
+
+        # Revoke all active refresh tokens for this user
+        active_tokens = RefreshTokenRepository.get_active_tokens_by_user_id(user_id)
+        if active_tokens:
+            RefreshTokenRepository.revoke_all_by_user_id(user_id)
+
+            from app.models.revoked_token import RevokedToken
+            tokens_to_revoke = []
+            for token in active_tokens:
+                if not RevokedToken.is_revoked(token.jti, user_id, "refresh"):
+                    tokens_to_revoke.append({
+                        "jti": token.jti,
+                        "user_id": user_id,
+                        "token_type": "refresh",
+                        "expires_at": token.expires_at
+                    })
+            if tokens_to_revoke:
+                RevokedTokenRepository.revoke_tokens_bulk(tokens_to_revoke)
+ 

@@ -52,3 +52,9 @@ class RefreshTokenSchema(Schema):
     refresh_token = fields.String(
         required=True
     )
+
+class LogoutSchema(Schema):
+    refresh_token = fields.String(
+        required=False,
+        metadata={"description": "The refresh token to revoke"}
+    )

@@ -33,16 +33,21 @@ class RefreshTokenRepository:
         except Exception as e:
             db.session.rollback()
             raise Exception(f"Error while revoking token: {str(e)}")
-    
 
     @staticmethod
-    def revoke_all_user_sessions(user_id):
+    def get_active_tokens_by_user_id(user_id):
+        return RefreshToken.query.filter_by(user_id=user_id, is_revoked=False).all()
 
+    @staticmethod
+    def revoke_all_by_user_id(user_id):
         try:
-            RefreshToken.query.filter_by(user_id=user_id).delete()
+            tokens = RefreshToken.query.filter_by(user_id=user_id, is_revoked=False).all()
+            for token in tokens:
+                token.is_revoked = True
+                token.revoked_at = datetime.utcnow()
             db.session.commit()
-            return True
-        except:
+            return tokens
+        except Exception as e:
             db.session.rollback()
-            raise Exception("Error while revoking sessions")
-    
+            raise Exception(f"Error while revoking all user tokens: {str(e)}")
+

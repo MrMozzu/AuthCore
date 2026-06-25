@@ -46,14 +46,6 @@ class UserRepository:
             db.session.rollback()
             raise Exception("Error while updating user")
 
-    @staticmethod
-    def revoke_token(token):
-        try:
-            db.session.add(token)
-            db.session.commit()
-            return token 
-        except:
-            db.session.rollback()
-            raise Exception("Error while revoking token")
+
 
     
