@@ -8,6 +8,7 @@ class UserSchema(Schema):
     email = fields.Email(required=True)
     phone_no = fields.String(required=True)
     is_verified = fields.Boolean(required=True)
+    role = fields.String(dump_only=True)
     
 class UpdateUserSchema(Schema):
     email = fields.Email(required=True)
@@ -19,6 +20,7 @@ class UserResponseSchema(Schema):
     email = fields.Email(required=True)
     phone_no = fields.String(required=True)
     is_verified = fields.Boolean(required=True)
+    role = fields.String(required=True)
 
 class ChangePasswordSchema(Schema):
     old_password = fields.String(
@@ -33,4 +35,11 @@ class ChangePasswordSchema(Schema):
         required=True,
         validate=validate.Length(min=3, max=30)
     )
+
+class UpdateRoleSchema(Schema):
+    role = fields.String(
+        required=True,
+        validate=validate.OneOf(["user", "moderator", "admin"])
+    )
+
 

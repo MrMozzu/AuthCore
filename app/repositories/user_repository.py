@@ -46,6 +46,23 @@ class UserRepository:
             db.session.rollback()
             raise Exception("Error while updating user")
 
+    @staticmethod
+    def get_all():
+        return User.query.all()
+
+    @staticmethod
+    def delete(user):
+        if not user:
+            raise Exception("User not found")
+        
+        try:
+            db.session.delete(user)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            raise Exception("Error while deleting user")
+
+
 
 
     

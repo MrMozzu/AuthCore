@@ -14,6 +14,7 @@ class User(TimeStampMixin, db.Model):
     email = db.Column(db.String(300), unique=True, nullable=False, index=True) 
     password_hash = db.Column(db.String, nullable=False)
     is_verified = db.Column(db.Boolean, nullable=False,  default=False)
+    role = db.Column(db.String(20), nullable=False, default="user")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

@@ -54,6 +54,33 @@ class UserService:
         except:
             raise Exception("Error while updating passowrd")
 
+    @staticmethod
+    def get_all_users():
+        return UserRepository.get_all()
+
+    @staticmethod
+    def change_user_role(user_id, role):
+        user = UserRepository.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError("User not found")
+        user.role = role
+        try:
+            return UserRepository.update(user)
+        except:
+            raise Exception("Error while updating user role")
+
+    @staticmethod
+    def delete_user(user_id):
+        user = UserRepository.get_by_id(user_id)
+        if not user:
+            raise UserNotFoundError("User not found")
+        try:
+            UserRepository.delete(user)
+            return True
+        except:
+            raise Exception("Error while deleting user")
+
+
 
 
 

@@ -4,6 +4,7 @@ from app.services.auth_service import AuthService
 from app.schemas.auth_schema import RegisterSchema, LoginSchema, ForgotPasswordSchema, ResetPasswordSchema, LogoutSchema
 from app.schemas.response_schema import MessageResponseSchema, LoginResponseSchema, RefreshResponseSchema
 from flask_smorest import Blueprint
+from app.extensions import limiter
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth", description="Authentication APIs")
 

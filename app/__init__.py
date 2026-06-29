@@ -1,5 +1,5 @@
 from flask import Flask
-from app.extensions import db, migrate, jwt, mail, api 
+from app.extensions import db, migrate, jwt, mail, api, limiter
 from app.errors.handlers import register_error_handlers
 
 
